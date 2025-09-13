@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sénior IA</title>
+<style>
+body {
+  margin:0;
+  font-family:'Poppins',Arial,sans-serif;
+  background:#f5f7fa;
+  color:#333;
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  transition:background 0.3s,color 0.3s;
+}
+header {
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 20px;
+  background:linear-gradient(135deg,#6a85b6,#bac8e0);
+  color:white;
+  border-radius:0 0 20px 20px;
+}
+.logo {font-weight:600;font-size:1.6em;}
+.top-buttons{display:flex;gap:8px;align-items:center;}
+button {cursor:pointer;border:none;font-weight:600;}
+#theme-toggle, #new-chat-btn, #menu-btn {
+  background:rgba(255,255,255,0.2);border-radius:50%;width:36px;height:36px;font-size:1.2em;
+}
+#new-chat-btn {width:auto;padding:0 12px;font-size:0.9em;}
+.dropdown {
+  display:none;
+  position:absolute;top:60px;right:20px;
+  background:#fff;border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
+  overflow:hidden;min-width:180px;
+  z-index:100;
+}
+.dropdown button {
+  width:100%;padding:10px;text-align:left;
+  background:none;border:none;cursor:pointer;
+}
+.dropdown button:hover {background:#e6f0ff;}
+main {
+  flex:1;overflow-y:auto;padding:20px;
+  background:#eef3f9;
+  position:relative;
+}
+main::-webkit-scrollbar{width:8px;}
+main::-webkit-scrollbar-thumb{background:#6a85b6;border-radius:4px;}
+.message {
+  margin:8px 0;
+  padding:12px 16px;
+  border-radius:18px;
+  max-width:70%;
+  word-wrap:break-word;
+  line-height:1.4em;
+  opacity:0;
+  transform:translateY(15px);
+  transition:0.3s;
+}
+.message.show{opacity:1;transform:translateY(0);}
+.user {background:#cce5ff;align-self:flex-end;margin-left:auto;}
+.ai {background:#fff;align-self:flex-start;margin-right:auto;border:1px solid #ddd;}
+footer {
+  display:flex;padding:12px 16px;
+  background:#d9e9ff;border-top:2px solid #aac8ff;
+}
+input {
+  flex:1;padding:10px;border-radius:20px;
+  border:1px solid #6a85b6;margin-right:8px;
+}
+#send-btn {
+  background:#6a85b6;color:white;
+  border-radius:20px;padding:10px 16px;
+}
+body.dark {background:#1e1e2f;color:#f5f5f5;}
+body.dark main{background:#2c2c3c;}
+body.dark .dropdown{background:#2c2c3c;}
+body.dark .dropdown button:hover{background:#3a3a55;}
+body.dark .user{background:#4b6cb7;color:white;}
+body.dark .ai{background:#3a3a55;color:#f5f5f5;}
+body.dark footer{background:#2c2c3c;border-top-color:#444;}
+body.dark header{background:linear-gradient(135deg,#4b6cb7,#182848);}
+
+/* Modal simples com borda verde */
+#thank-modal {
+  display:none;
+  position:fixed;
+  top:60px;left:50%;
+  transform:translateX(-50%);
+  background:#ffffff;
+  color:#333333;
+  border:4px solid #28a745; /* borda verde */
+  border-radius:15px;
+  padding:25px 35px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);
+  text-align:center;
+  z-index:200;
+  font-family:'Poppins',sans-serif;
+}
+#thank-modal h3 {
+  margin:0 0 15px 0; 
+  font-size:1.8em; 
+  color:#28a745;
+}
+#thank-modal p {
+  margin:10px 0; 
+  font-size:1.1em; 
+  line-height:1.5em;
+}
+
+/* Introdução inicial elegante */
+#intro-box {
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  font-size:2em;
+  font-weight:700;
+  color:rgba(50,50,50,0.65);
+  text-align:center;
+  text-shadow:0 0 10px rgba(0,0,0,0.1);
+  z-index:150;
+  transition:opacity 0.4s;
+}
+#intro-box.hide{opacity:0;pointer-events:none;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Sénior IA</div>
+  <div class="top-buttons">
+    <button id="theme-toggle">🌙</button>
+    <button id="new-chat-btn">🆕 Novo Chat</button>
+    <button id="menu-btn">⋮</button>
+    <div class="dropdown" id="dropdown">
+      <button id="profile">Perfil</button>
+      <button id="settings">Configurações</button>
+      <button id="logout">Logout</button>
+    </div>
+  </div>
+</header>
+
+<main id="chat"></main>
+
+<footer>
+  <input type="text" id="user-input" placeholder="Digite sua mensagem...">
+  <button id="send-btn">Enviar</button>
+</footer>
+
+<!-- Modal de agradecimento simples com borda verde -->
+<div id="thank-modal">
+  <h3>💌 Agradecemos sua presença!</h3>
+  <p>Sua participação fortalece este projeto e nos motiva a continuar trazendo melhorias para você.</p>
+  <p>Para apoiar este projeto, utilize:</p>
+  <p><b>📱 Mpesa:</b> 856562554</p>
+  <p><b>📱 eMola:</b> 870338630</p>
+  <p>💎Agradecemos infinitamene por acessar nosso projeto, que a magia artificial ilumine sua vida.💎</p>
+</div>
+
+<!-- Introdução inicial elegante -->
+<div id="intro-box">Olá, sou a Sénior IA, criada por Lord Iny 💎</div>
+
+<script>
+const API_KEY = "1smIxf3bolFlTpFwI406GkWoUgYKRB0rFwIuzZrY";
+const chat = document.getElementById("chat");
+const input = document.getElementById("user-input");
+const sendBtn = document.getElementById("send-btn");
+const themeToggle = document.getElementById("theme-toggle");
+const newChatBtn = document.getElementById("new-chat-btn");
+const menuBtn = document.getElementById("menu-btn");
+const dropdown = document.getElementById("dropdown");
+const thankModal = document.getElementById("thank-modal");
+const introBox = document.getElementById("intro-box");
+let firstMessageSent = false;
+
+// Enviar mensagem
+sendBtn.addEventListener("click", sendMessage);
+input.addEventListener("keypress", e=>{ if(e.key==="Enter") sendMessage(); });
+
+async function sendMessage(){
+  const msg = input.value.trim();
+  if(!msg) return;
+
+  if(!firstMessageSent){
+    introBox.classList.add("hide");
+    firstMessageSent = true;
+  }
+
+  const userDiv = addMessage(msg,"user");
+  input.value="";
+  
+  const typingDiv = addMessage("Digitando...","ai");
+  chat.scrollTop = chat.scrollHeight;
+
+  try{
+    const res = await fetch("https://api.cohere.ai/v1/chat",{
+      method:"POST",
+      headers:{
+        "Authorization":"Bearer "+API_KEY,
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        model:"command-r",
+        message: msg + "\n(Responda em português, a não ser que o usuário use outra língua.)"
+      })
+    });
+    const data = await res.json();
+    chat.removeChild(typingDiv);
+    const reply = data.text || data.message || "Sem resposta...";
+    addMessage(reply,"ai");
+  }catch(err){
+    console.error(err);
+    chat.removeChild(typingDiv);
+    addMessage("⚠️ Erro ao conectar à IA","ai");
+  }
+}
+
+// Adicionar mensagem animada
+function addMessage(text,sender){
+  const div = document.createElement("div");
+  div.className=`message ${sender}`;
+  div.textContent=text;
+  chat.appendChild(div);
+  setTimeout(()=>div.classList.add("show"),50);
+  chat.scrollTop=chat.scrollHeight;
+  return div;
+}
+
+// Alternar tema
+themeToggle.addEventListener("click", e=>{
+  e.stopPropagation();
+  document.body.classList.toggle("dark");
+  themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+});
+
+// Botão Novo Chat
+newChatBtn.addEventListener("click", ()=>{
+  chat.innerHTML = "";
+  firstMessageSent = false;
+  introBox.classList.remove("hide");
+});
+
+// Menu dropdown
+menuBtn.addEventListener("click", e=>{
+  e.stopPropagation();
+  dropdown.style.display = dropdown.style.display==="block"?"none":"block";
+});
+window.addEventListener("click", ()=> dropdown.style.display="none");
+
+// Botões dropdown
+document.getElementById("profile").onclick = e=>{ e.stopPropagation(); alert("Perfil não cadastrado 😇"); }
+document.getElementById("settings").onclick = e=>{
+  e.stopPropagation();
+  thankModal.style.display="block";
+}
+document.getElementById("logout").onclick = e=>{ e.stopPropagation(); alert("Você saiu da conta 😌"); }
+
+// Fechar modal ao clicar fora
+window.addEventListener("click", ()=>{ 
+  thankModal.style.display="none"; 
+});
+thankModal.addEventListener("click", e=>e.stopPropagation());
+</script>
+</body>
+</html>
